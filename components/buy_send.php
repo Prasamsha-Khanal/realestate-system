@@ -60,6 +60,8 @@ if(isset($_POST['buy_property'])){
 
    if($insert_success){
       $success_msg[] = 'Property purchased successfully!';
+      header('location:view_purchases.php');
+      exit();
    } else {
       $error_msg[] = 'Failed to complete purchase!';
    }

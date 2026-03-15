@@ -15,6 +15,8 @@ if(isset($_GET['get_id'])){
 }
 
 include 'components/save_send.php';
+include 'components/buy_send.php';
+include 'components/inquiry_send.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -44,10 +46,10 @@ include 'components/save_send.php';
 <?php include 'components/user_header.php'; ?>
 
 <section class="view-property">
-   <h1 class="heading">Property Details</h1>
+   <h1 class="heading">Property Details</h1> 
 
    <?php
-      $select_properties = $conn->prepare("SELECT * FROM `property` WHERE id = ?");
+      $select_properties = $conn->prepare("SELECT * FROM `property` WHERE id = ?"); 
       $select_properties->execute([$get_id]);
       if($select_properties->rowCount() > 0){
          while($fetch_property = $select_properties->fetch(PDO::FETCH_ASSOC)){
@@ -58,8 +60,14 @@ include 'components/save_send.php';
             $select_user->execute([$fetch_property['user_id']]);
             $fetch_user = $select_user->fetch(PDO::FETCH_ASSOC);
 
-            $select_saved = $conn->prepare("SELECT * FROM `saved` WHERE property_id = ? AND user_id = ?");
-            $select_saved->execute([$property_id, $user_id]);
+            $is_saved_property = false;
+            try {
+               $select_saved = $conn->prepare("SELECT * FROM `saved` WHERE property_id = ? AND user_id = ?");
+               $select_saved->execute([$property_id, $user_id]);
+               $is_saved_property = $select_saved->rowCount() > 0;
+            } catch (PDOException $e) {
+               $is_saved_property = false;
+            }
    ?>
    <div class="details">
       <div class="swiper images-container">
@@ -91,8 +99,12 @@ include 'components/save_send.php';
       
       <div class="info">
          <p><i class="fa-solid fa-tag"></i><span>Rs. <?= number_format($fetch_property['price']); ?></span></p>
-         <p><i class="fas fa-user"></i><span><?= $fetch_user['name']; ?></span></p>
-         <p><i class="fas fa-phone"></i><a href="tel:<?= $fetch_user['number']; ?>"><?= $fetch_user['number']; ?></a></p>
+         <?php if($fetch_user){ ?>
+            <p><i class="fas fa-user"></i><span><?= htmlspecialchars($fetch_user['name']); ?></span></p>
+            <p><i class="fas fa-phone"></i><a href="tel:<?= htmlspecialchars($fetch_user['number']); ?>"><?= htmlspecialchars($fetch_user['number']); ?></a></p>
+         <?php } else { ?>
+            <p><i class="fas fa-user"></i><span>Unknown Seller</span></p>
+         <?php } ?>
          <p><i class="fas fa-house"></i><span><?= ucwords(str_replace('_', ' ', $fetch_property['offer'])); ?></span></p>
          <p><i class="fas fa-calendar"></i><span><?= date('d M Y', strtotime($fetch_property['date'])); ?></span></p>
       </div>
@@ -194,10 +206,10 @@ include 'components/save_send.php';
 
       <form action="" method="post" class="flex-btn">
          <input type="hidden" name="property_id" value="<?= $property_id; ?>">
-         <a href="buy.php?property_id=<?= $property_id; ?>" class="btn">
+         <button type="submit" name="buy_property" class="btn">
             <i class="fa-solid fa-landmark"></i> Buy Now
-         </a>
-         <input type="submit" value="Send Enquiry" name="send" class="btn">
+         </button>
+         <!-- <input type="submit" value="Send Enquiry" name="send" class="btn"> -->
       </form>
    </div>
    <?php

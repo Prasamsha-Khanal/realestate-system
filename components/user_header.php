@@ -1,9 +1,21 @@
-<!-- header section starts  -->
-
 <?php
-// Ensure $user_id is always defined
-if(!isset($user_id)){
+// Ensure $user_id is defined (set in pages that include this header)
+if (!isset($user_id)) {
     $user_id = '';
+}
+
+// Fetch user type only if logged in
+$user_type = '';
+$user_name = '';
+
+if ($user_id != '') {
+    $select_user = $conn->prepare("SELECT name, type FROM `users` WHERE id = ? LIMIT 1");
+    $select_user->execute([$user_id]);
+    if ($select_user->rowCount() > 0) {
+        $fetch_user = $select_user->fetch(PDO::FETCH_ASSOC);
+        $user_type = $fetch_user['type'];
+        $user_name = htmlspecialchars($fetch_user['name']);
+    }
 }
 ?>
 
@@ -14,7 +26,10 @@ if(!isset($user_id)){
          <a href="home.php" class="logo"><i class="fas fa-house"></i>MyHome</a>
 
          <ul>
-            <li><a href="post_property.php">Post property<i class="fas fa-paper-plane"></i></a></li>
+            <?php if ($user_type == 'seller'): ?>
+               <!-- Only sellers see "Post property" in top bar -->
+               <li><a href="post_property.php">Post property<i class="fas fa-paper-plane"></i></a></li>
+            <?php endif; ?>
          </ul>
       </section>
    </nav>
@@ -25,42 +40,81 @@ if(!isset($user_id)){
 
          <div class="menu">
             <ul>
-               <li><a href="#">My listings<i class="fas fa-angle-down"></i></a>
+
+               <!-- Property Manager / My Activity Dropdown -->
+               <li><a href="#">
+                  <?php if ($user_type == 'seller'): ?>
+                     Property Manager<i class="fas fa-angle-down"></i>
+                  <?php elseif ($user_type == 'buyer'): ?>
+                     My Activity<i class="fas fa-angle-down"></i>
+                  <?php else: ?>
+                     Explore<i class="fas fa-angle-down"></i>
+                  <?php endif; ?>
+               </a>
                   <ul>
-                     <li><a href="dashboard.php">Dashboard</a></li>
-                     <li><a href="post_property.php">Post property</a></li>
-                     <li><a href="my_listings.php">My listings</a></li>
+                     <?php if ($user_type == 'seller'): ?>
+                        <li><a href="dashboard.php">Dashboard</a></li>
+                        <li><a href="post_property.php">Post Property</a></li>
+                        <li><a href="my_listings.php">My Listings</a></li>
+                        <!-- <li><a href="requests.php">View Requests</a></li> -->
+
+                     <?php elseif ($user_type == 'buyer'): ?>
+                        <li><a href="buyer_dashboard.php">Dashboard</a></li>
+                        <!-- <li><a href="saved.php">Saved Properties</a></li> -->
+                        <li><a href="view_purchases.php">My Purchases</a></li>
+                        <!-- <li><a href="sent_requests.php">Inquiries Sent</a></li> -->
+
+                     <?php else: // Guest ?>
+                        <li><a href="listings.php">All Listings</a></li>
+                        <li><a href="search.php">Search Properties</a></li>
+                     <?php endif; ?>
                   </ul>
                </li>
+
+               <!-- Options Dropdown (common but slightly different) -->
                <li><a href="#">Options<i class="fas fa-angle-down"></i></a>
                   <ul>
-                     <li><a href="search.php">Filter search</a></li>
-                     <li><a href="listings.php">All listings</a></li>
+                     <!-- <li><a href="search.php">Latest Listings</a></li> -->
+                     <li><a href="listings.php">All Listings</a></li>
+                     <?php if ($user_type == 'buyer'): ?>
+                        <!-- <li><a href="saved.php">Saved Properties</a></li> -->
+                     <?php endif; ?>
                   </ul>
                </li>
+
+               <!-- Help Dropdown (same for all) -->
                <li><a href="#">Help<i class="fas fa-angle-down"></i></a>
                   <ul>
-                     <li><a href="about.php">About us</a></li>
-                     <li><a href="contact.php">Contact us</a></li>
+                     <li><a href="about.php">About Us</a></li>
+                     <li><a href="contact.php">Contact Us</a></li>
                      <li><a href="contact.php#faq">FAQ</a></li>
                   </ul>
                </li>
+
             </ul>
          </div>
 
+         <!-- Account Dropdown -->
          <ul>
-            <li><a href="#">Account <i class="fas fa-angle-down"></i></a>
+            <li><a href="#">
+               <?php if ($user_id != ''): ?>
+                  Hello <?= $user_name; ?> <i class="fas fa-angle-down"></i>
+               <?php else: ?>
+                  Account <i class="fas fa-angle-down"></i>
+               <?php endif; ?>
+            </a>
                <ul>
-                  <?php if($user_id == ''): ?>
-                     <li><a href="login.php">Login now</a></li>
-                     <li><a href="register.php">Register new</a></li>
+                  <?php if ($user_id == ''): ?>
+                     <li><a href="login.php">Login Now</a></li>
+                     <li><a href="register.php">Register New</a></li>
                   <?php else: ?>
-                     <li><a href="update.php">Update profile</a></li>
+                     <li><a href="update.php">Update Profile</a></li>
                      <li><a href="components/user_logout.php" onclick="return confirm('Logout from this website?');">Logout</a></li>
                   <?php endif; ?>
                </ul>
             </li>
          </ul>
+
       </section>
    </nav>
 

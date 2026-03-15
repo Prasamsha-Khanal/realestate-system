@@ -12,18 +12,17 @@ if(isset($_POST['submit'])){
 
    $email = $_POST['email'];
    $email = filter_var($email, FILTER_SANITIZE_STRING); 
-   $pass = sha1($_POST['pass']);
-   $pass = filter_var($pass, FILTER_SANITIZE_STRING); 
+   $pass = $_POST['pass'];
 
-   $select_users = $conn->prepare("SELECT * FROM `users` WHERE email = ? AND password = ? LIMIT 1");
-   $select_users->execute([$email, $pass]);
+   $select_users = $conn->prepare("SELECT * FROM `users` WHERE email = ? LIMIT 1");
+   $select_users->execute([$email]);
    $row = $select_users->fetch(PDO::FETCH_ASSOC);
 
-   if($select_users->rowCount() > 0){
+   if($select_users->rowCount() > 0 && password_verify($pass, $row['password'])){
       setcookie('user_id', $row['id'], time() + 60*60*24*30, '/');
       header('location:home.php');
    }else{
-      $warning_msg[] = 'Incorrect username or password!';
+      $warning_msg[] = 'Incorrect email or password!';
    }
 
 }

@@ -13,6 +13,12 @@ $select_user = $conn->prepare("SELECT * FROM `users` WHERE id = ? LIMIT 1");
 $select_user->execute([$user_id]);
 $fetch_user = $select_user->fetch(PDO::FETCH_ASSOC);
 
+// Redirect if user not found
+if(!$fetch_user){
+   header('location:login.php');
+   exit();
+}
+
 if(isset($_POST['submit'])){
 
    $name = $_POST['name'];
@@ -104,9 +110,9 @@ if(isset($_POST['submit'])){
 
    <form action="" method="post">
       <h3>Update your account!</h3>
-      <input type="tel" name="name" maxlength="50" placeholder="<?= $fetch_user['name']; ?>" class="box">
-      <input type="email" name="email" maxlength="50" placeholder="<?= $fetch_user['email']; ?>" class="box">
-      <input type="number" name="number" min="0" max="9999999999" maxlength="10" placeholder="<?= $fetch_user['number']; ?>" class="box">
+      <input type="tel" name="name" maxlength="50" placeholder="<?= $fetch_user['name'] ?? 'Enter your name'; ?>" class="box">
+      <input type="email" name="email" maxlength="50" placeholder="<?= $fetch_user['email'] ?? 'Enter your email'; ?>" class="box">
+      <input type="number" name="number" min="0" max="9999999999" maxlength="10" placeholder="<?= $fetch_user['number'] ?? 'Enter your number'; ?>" class="box">
       <input type="password" name="old_pass" maxlength="20" placeholder="Enter your old password" class="box">
       <input type="password" name="new_pass" maxlength="20" placeholder="Enter your new password" class="box">
       <input type="password" name="c_pass" maxlength="20" placeholder="Confirm your new password" class="box">
@@ -114,11 +120,6 @@ if(isset($_POST['submit'])){
    </form>
 
 </section>
-
-
-
-
-
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
 

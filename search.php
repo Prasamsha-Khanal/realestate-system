@@ -33,7 +33,7 @@ include 'components/save_send.php';
 
 <!-- search filter section starts  -->
 
-<section class="filters" style="padding-bottom: 0;">
+<!-- <section class="filters" style="padding-bottom: 0;">
 
    <form action="" method="post">
       <div id="close-filter"><i class="fas fa-times"></i></div>
@@ -118,7 +118,7 @@ include 'components/save_send.php';
          <input type="submit" value="search property" name="filter_search" class="btn">
    </form>
 
-</section>
+</section> -->
 
 <!-- search filter section ends -->
 
@@ -215,15 +215,21 @@ if(isset($_POST['h_search'])){
 
             $total_images = (1 + $image_coutn_02 + $image_coutn_03 + $image_coutn_04 + $image_coutn_05);
 
-            $select_saved = $conn->prepare("SELECT * FROM `saved` WHERE property_id = ? and user_id = ?");
-            $select_saved->execute([$fetch_property['id'], $user_id]);
+            $is_saved = false;
+            try {
+               $select_saved = $conn->prepare("SELECT * FROM `saved` WHERE property_id = ? and user_id = ?");
+               $select_saved->execute([$fetch_property['id'], $user_id]);
+               $is_saved = $select_saved->rowCount() > 0;
+            } catch (PDOException $e) {
+               $is_saved = false;
+            }
 
       ?>
       <form action="" method="POST">
          <div class="box">
             <input type="hidden" name="property_id" value="<?= $fetch_property['id']; ?>">
             <?php
-               if($select_saved->rowCount() > 0){
+               if($is_saved){
             ?>
             <button type="submit" name="save" class="save"><i class="fas fa-heart"></i><span>saved</span></button>
             <?php
@@ -238,11 +244,19 @@ if(isset($_POST['h_search'])){
                <img src="uploaded_files/<?= $fetch_property['image_01']; ?>" alt="">
             </div>
             <div class="admin">
-               <h3><?= substr($fetch_user['name'], 0, 1); ?></h3>
-               <div>
-                  <p><?= $fetch_user['name']; ?></p>
-                  <span><?= $fetch_property['date']; ?></span>
-               </div>
+               <?php if($fetch_user){ ?>
+                  <h3><?= htmlspecialchars(substr($fetch_user['name'], 0, 1)); ?></h3>
+                  <div>
+                     <p><?= htmlspecialchars($fetch_user['name']); ?></p>
+                     <span><?= $fetch_property['date']; ?></span>
+                  </div>
+               <?php } else { ?>
+                  <h3>U</h3>
+                  <div>
+                     <p>Unknown Seller</p>
+                     <span><?= $fetch_property['date']; ?></span>
+                  </div>
+               <?php } ?>
             </div>
          </div>
          <div class="box">
@@ -275,16 +289,6 @@ if(isset($_POST['h_search'])){
 </section>
 
 <!-- listings section ends -->
-
-
-
-
-
-
-
-
-
-
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
 

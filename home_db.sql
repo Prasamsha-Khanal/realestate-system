@@ -130,6 +130,21 @@ CREATE TABLE `saved` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `purchases`
+--
+
+CREATE TABLE `purchases` (
+  `id` varchar(20) NOT NULL,
+  `buyer_id` varchar(20) NOT NULL,
+  `seller_id` varchar(20) NOT NULL,
+  `property_id` varchar(20) NOT NULL,
+  `status` varchar(20) NOT NULL DEFAULT 'completed',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `users`
 --
 
@@ -138,7 +153,9 @@ CREATE TABLE `users` (
   `name` varchar(50) NOT NULL,
   `number` varchar(10) NOT NULL,
   `email` varchar(50) NOT NULL,
-  `password` varchar(50) NOT NULL
+  `password` varchar(100) NOT NULL,
+  `type` varchar(20) NOT NULL DEFAULT 'buyer',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 COMMIT;
 

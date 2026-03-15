@@ -194,21 +194,27 @@ include 'components/save_send.php';
 
             $total_images = (1 + $image_coutn_02 + $image_coutn_03 + $image_coutn_04 + $image_coutn_05);
 
-            $select_saved = $conn->prepare("SELECT * FROM `saved` WHERE property_id = ? and user_id = ?");
-            $select_saved->execute([$fetch_property['id'], $user_id]);
+            $is_saved = false;
+            try {
+               $select_saved = $conn->prepare("SELECT * FROM `saved` WHERE property_id = ? and user_id = ?");
+               $select_saved->execute([$fetch_property['id'], $user_id]);
+               $is_saved = $select_saved->rowCount() > 0;
+            } catch (PDOException $e) {
+               $is_saved = false;
+            }
 
       ?>
       <form action="" method="POST">
          <div class="box">
             <input type="hidden" name="property_id" value="<?= $fetch_property['id']; ?>">
             <?php
-               if($select_saved->rowCount() > 0){
+               if($is_saved){
             ?>
             <button type="submit" name="save" class="save"><i class="fas fa-heart"></i><span>saved</span></button>
             <?php
                }else{ 
             ?>
-            <button type="submit" name="save" class="save"><i class="far fa-heart"></i><span>save</span></button>
+            <!-- <button type="submit" name="save" class="save"><i class="far fa-heart"></i><span>save</span></button> -->
             <?php
                }
             ?>
@@ -217,11 +223,19 @@ include 'components/save_send.php';
                <img src="uploaded_files/<?= $fetch_property['image_01']; ?>" alt="">
             </div>
             <div class="admin">
+               <?php if($fetch_user){ ?>
                <h3><?= substr($fetch_user['name'], 0, 1); ?></h3>
                <div>
                   <p><?= $fetch_user['name']; ?></p>
                   <span><?= $fetch_property['date']; ?></span>
                </div>
+               <?php } else { ?>
+               <h3>U</h3>
+               <div>
+                  <p>Unknown Seller</p>
+                  <span><?= $fetch_property['date']; ?></span>
+               </div>
+               <?php } ?>
             </div>
          </div>
          <div class="box">
@@ -238,7 +252,7 @@ include 'components/save_send.php';
             </div>
             <div class="flex-btn">
                <a href="view_property.php?get_id=<?= $fetch_property['id']; ?>" class="btn">view property</a>
-               <input type="submit" value="send enquiry" name="send" class="btn">
+               <!-- <input type="submit" value="send enquiry" name="send" class="btn"> -->
             </div>
          </div>
       </form>

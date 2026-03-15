@@ -59,9 +59,13 @@ include 'components/save_send.php';
                // check if saved only when user is logged in
                $is_saved = false;
                if($user_id !== ''){
-                  $select_saved = $conn->prepare("SELECT * FROM `saved` WHERE property_id = ? AND user_id = ?");
-                  $select_saved->execute([$fetch_property['id'], $user_id]);
-                  $is_saved = $select_saved->rowCount() > 0;
+                  try {
+                     $select_saved = $conn->prepare("SELECT * FROM `saved` WHERE property_id = ? AND user_id = ?");
+                     $select_saved->execute([$fetch_property['id'], $user_id]);
+                     $is_saved = $select_saved->rowCount() > 0;
+                  } catch (PDOException $e) {
+                     $is_saved = false;
+                  }
                }
 
                // safe values for output
@@ -121,7 +125,7 @@ include 'components/save_send.php';
             </div>
             <div class="flex-btn">
                <a href="view_property.php?get_id=<?= $prop_id; ?>" class="btn">View property</a>
-               <input type="submit" value="send enquiry" name="send" class="btn">
+               <!-- <input type="submit" value="send enquiry" name="send" class="btn"> -->
             </div>
          </div>
       </form>
