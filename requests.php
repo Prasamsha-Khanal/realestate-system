@@ -60,7 +60,7 @@ if(isset($_POST['delete'])){
       if($select_requests->rowCount() > 0){
          while($fetch_request = $select_requests->fetch(PDO::FETCH_ASSOC)){
 
-        $select_sender = $conn->prepare("SELECT * FROM `users` WHERE id = ?");
+        $select_sender = $conn->prepare("SELECT * FROM `sellers` WHERE id = ?");
         $select_sender->execute([$fetch_request['sender']]);
         $fetch_sender = $select_sender->fetch(PDO::FETCH_ASSOC);
 

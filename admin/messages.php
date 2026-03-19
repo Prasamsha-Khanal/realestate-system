@@ -14,15 +14,19 @@ if(isset($_POST['delete'])){
    $delete_id = $_POST['delete_id'];
    $delete_id = filter_var($delete_id, FILTER_SANITIZE_STRING);
 
-   $verify_delete = $conn->prepare("SELECT * FROM `messages` WHERE id = ?");
-   $verify_delete->execute([$delete_id]);
+   try {
+      $verify_delete = $conn->prepare("SELECT * FROM `messages` WHERE id = ?");
+      $verify_delete->execute([$delete_id]);
 
-   if($verify_delete->rowCount() > 0){
-      $delete_bookings = $conn->prepare("DELETE FROM `messages` WHERE id = ?");
-      $delete_bookings->execute([$delete_id]);
-      $success_msg[] = 'Message deleted!';
-   }else{
-      $warning_msg[] = 'Message deleted already!';
+      if($verify_delete->rowCount() > 0){
+         $delete_bookings = $conn->prepare("DELETE FROM `messages` WHERE id = ?");
+         $delete_bookings->execute([$delete_id]);
+         $success_msg[] = 'Message deleted!';
+      }else{
+         $warning_msg[] = 'Message deleted already!';
+      }
+   } catch (PDOException $e) {
+      $warning_msg[] = 'Error deleting message!';
    }
 
 }
@@ -64,16 +68,22 @@ if(isset($_POST['delete'])){
    <div class="box-container">
 
    <?php
-      if(isset($_POST['search_box']) OR isset($_POST['search_btn'])){
-         $search_box = $_POST['search_box'];
-         $search_box = filter_var($search_box, FILTER_SANITIZE_STRING);
-         $select_messages = $conn->prepare("SELECT * FROM `messages` WHERE name LIKE '%{$search_box}%' OR number LIKE '%{$search_box}%' OR email LIKE '%{$search_box}%'");
-         $select_messages->execute();
-      }else{
-         $select_messages = $conn->prepare("SELECT * FROM `messages`");
-         $select_messages->execute();
+      $select_messages = null;
+      try {
+         if(isset($_POST['search_box']) OR isset($_POST['search_btn'])){
+            $search_box = $_POST['search_box'];
+            $search_box = filter_var($search_box, FILTER_SANITIZE_STRING);
+            $select_messages = $conn->prepare("SELECT * FROM `messages` WHERE name LIKE '%{$search_box}%' OR number LIKE '%{$search_box}%' OR email LIKE '%{$search_box}%'");
+            $select_messages->execute();
+         }else{
+            $select_messages = $conn->prepare("SELECT * FROM `messages`");
+            $select_messages->execute();
+         }
+      } catch (PDOException $e) {
+         $select_messages = null;
       }
-      if($select_messages->rowCount() > 0){
+
+      if($select_messages && $select_messages->rowCount() > 0){
          while($fetch_messages = $select_messages->fetch(PDO::FETCH_ASSOC)){
    ?>
    <div class="box">

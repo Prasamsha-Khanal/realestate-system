@@ -1,19 +1,24 @@
 <?php
-// Ensure $user_id is defined (set in pages that include this header)
 if (!isset($user_id)) {
     $user_id = '';
 }
 
-// Fetch user type only if logged in
 $user_type = '';
 $user_name = '';
 
 if ($user_id != '') {
-    $select_user = $conn->prepare("SELECT name, type FROM `users` WHERE id = ? LIMIT 1");
+    // ✅ Use cookie to know which table to query
+    $user_type = isset($_COOKIE['user_type']) ? $_COOKIE['user_type'] : '';
+
+    if ($user_type == 'buyer') {
+        $select_user = $conn->prepare("SELECT name FROM `buyers` WHERE id = ? LIMIT 1");
+    } else {
+        $select_user = $conn->prepare("SELECT name FROM `sellers` WHERE id = ? LIMIT 1");
+    }
+
     $select_user->execute([$user_id]);
     if ($select_user->rowCount() > 0) {
         $fetch_user = $select_user->fetch(PDO::FETCH_ASSOC);
-        $user_type = $fetch_user['type'];
         $user_name = htmlspecialchars($fetch_user['name']);
     }
 }

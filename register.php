@@ -1,4 +1,6 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 include 'components/connect.php';
 
 if (isset($_COOKIE['user_id'])) {
@@ -13,15 +15,14 @@ $success_msg = [];
 
 if (isset($_POST['submit'])) {
 
-   $id = create_unique_id(); // assuming this function exists in connect.php or functions
+   $id = create_unique_id();
    $name = trim($_POST['name']);
    $email = trim($_POST['email']);
    $number = trim($_POST['number']);
    $pass = $_POST['pass'];
    $c_pass = $_POST['c_pass'];
-   $type = $_POST['type'] ?? ''; // Get account type
+   $type = $_POST['type'] ?? '';
 
-   // Basic validation
    if (empty($name) || empty($email) || empty($number) || empty($pass) || empty($c_pass) || empty($type)) {
       $warning_msg[] = 'Please fill all fields!';
    } elseif ($pass !== $c_pass) {
@@ -29,32 +30,46 @@ if (isset($_POST['submit'])) {
    } elseif (strlen($number) != 10 || !ctype_digit($number)) {
       $warning_msg[] = 'Please enter a valid 10-digit phone number!';
    } else {
-      // Check if email already exists
-      $select_users = $conn->prepare("SELECT * FROM `users` WHERE email = ?");
-      $select_users->execute([$email]);
 
-      if ($select_users->rowCount() > 0) {
+      // Check email in buyers or sellers table
+      if ($type === 'buyer') {
+         $check = $conn->prepare("SELECT * FROM `buyers` WHERE email = ?");
+      } else {
+         $check = $conn->prepare("SELECT * FROM `sellers` WHERE email = ?");
+      }
+      $check->execute([$email]);
+
+      if ($check->rowCount() > 0) {
          $warning_msg[] = 'Email already taken!';
       } else {
-         // Secure password hashing
          $hashed_password = password_hash($pass, PASSWORD_DEFAULT);
 
-         // Insert user (seller needs approval? You can add 'approved' column later)
-         $insert_user = $conn->prepare("INSERT INTO `users` (id, name, number, email, type, password) VALUES (?, ?, ?, ?, ?, ?)");
-         $insert_success = $insert_user->execute([$id, $name, $number, $email, $type, $hashed_password]);
+         // Insert into buyers or sellers only — no user_id needed
+         if ($type === 'buyer') {
+            $insert = $conn->prepare("INSERT INTO `buyers` (id, name, number, email, password, created_at) 
+                                      VALUES (?, ?, ?, ?, ?, NOW())");
+         } else {
+            $insert = $conn->prepare("INSERT INTO `sellers` (id, name, number, email, password, created_at) 
+                                      VALUES (?, ?, ?, ?, ?, NOW())");
+         }
+
+         $insert_success = $insert->execute([$id, $name, $number, $email, $hashed_password]);
 
          if ($insert_success) {
-            // Auto-login after registration
-            $verify_user = $conn->prepare("SELECT * FROM `users` WHERE email = ? LIMIT 1");
-            $verify_user->execute([$email]);
-            $user = $verify_user->fetch(PDO::FETCH_ASSOC);
+            // Verify from correct table
+            if ($type === 'buyer') {
+               $verify = $conn->prepare("SELECT * FROM `buyers` WHERE email = ? LIMIT 1");
+            } else {
+               $verify = $conn->prepare("SELECT * FROM `sellers` WHERE email = ? LIMIT 1");
+            }
+            $verify->execute([$email]);
+            $user = $verify->fetch(PDO::FETCH_ASSOC);
 
             if ($user && password_verify($pass, $user['password'])) {
+               //Store both user_id and user_type in cookies
                setcookie('user_id', $user['id'], time() + 60 * 60 * 24 * 30, '/');
+               setcookie('user_type', $type, time() + 60 * 60 * 24 * 30, '/');
                $success_msg[] = 'Registered successfully! Welcome!';
-               // Optional: redirect after success
-               // header('Location: home.php');
-               // exit();
             } else {
                $error_msg[] = 'Login failed after registration. Please try logging in manually.';
             }
@@ -73,7 +88,6 @@ if (isset($_POST['submit'])) {
    <meta http-equiv="X-UA-Compatible" content="IE=edge">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
    <title>Register</title>
-
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
    <link rel="stylesheet" href="css/style.css">
 </head>
@@ -114,7 +128,6 @@ if (isset($_POST['submit'])) {
 
 <?php include 'components/message.php'; ?>
 
-<!-- Display messages using your existing system -->
 <?php
 if (!empty($warning_msg)) {
    foreach ($warning_msg as $msg) {

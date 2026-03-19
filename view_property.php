@@ -56,7 +56,7 @@ include 'components/inquiry_send.php';
             $property_id = $fetch_property['id'];
             $property_type = $fetch_property['type']; // home or land
 
-            $select_user = $conn->prepare("SELECT * FROM `users` WHERE id = ?");
+            $select_user = $conn->prepare("SELECT * FROM `sellers` WHERE id = ?");
             $select_user->execute([$fetch_property['user_id']]);
             $fetch_user = $select_user->fetch(PDO::FETCH_ASSOC);
 

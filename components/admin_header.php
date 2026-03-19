@@ -9,7 +9,7 @@
       <a href="listings.php"><i class="fas fa-building"></i><span>Listings</span></a>
       <a href="users.php"><i class="fas fa-user"></i><span>Users</span></a>
       <a href="admins.php"><i class="fas fa-user-gear"></i><span>Admins</span></a>
-      <a href="messages.php"><i class="fas fa-message"></i><span>Messages</span></a>
+      <!-- <a href="messages.php"><i class="fas fa-message"></i><span>Messages</span></a> -->
    </nav>
 
    <a href="update.php" class="btn">Update account</a>

@@ -44,7 +44,7 @@ include 'components/save_send.php';
             while($fetch_property = $select_properties->fetch(PDO::FETCH_ASSOC)){
 
                // fetch property owner
-               $select_user = $conn->prepare("SELECT * FROM `users` WHERE id = ?");
+               $select_user = $conn->prepare("SELECT * FROM `sellers` WHERE id = ?");
                $select_user->execute([$fetch_property['user_id']]);
                $fetch_user = $select_user->fetch(PDO::FETCH_ASSOC);
 

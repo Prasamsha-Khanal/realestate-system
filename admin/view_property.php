@@ -19,7 +19,7 @@ if(isset($_GET['get_id'])){
 if(isset($_POST['delete'])){
 
    $delete_id = $_POST['delete_id'];
-   $delete_id = filter_var($delete_id, FILTER_SANITIZE_STRING);
+   $delete_id = htmlspecialchars($delete_id);
 
    $verify_delete = $conn->prepare("SELECT * FROM `property` WHERE id = ?");
    $verify_delete->execute([$delete_id]);
@@ -93,7 +93,7 @@ if(isset($_POST['delete'])){
 
          $property_id = $fetch_property['id'];
 
-         $select_user = $conn->prepare("SELECT * FROM `users` WHERE id = ?");
+         $select_user = $conn->prepare("SELECT * FROM `sellers` WHERE id = ?");
          $select_user->execute([$fetch_property['user_id']]);
          $fetch_user = $select_user->fetch(PDO::FETCH_ASSOC);
 
@@ -181,15 +181,6 @@ if(isset($_POST['delete'])){
    ?>
 
 </section>
-
-
-
-
-
-
-
-
-
 
 
 

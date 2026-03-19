@@ -64,9 +64,15 @@ if(isset($_COOKIE['admin_id'])){
 
    <div class="box">
       <?php
-         $select_users = $conn->prepare("SELECT * FROM `users`");
-         $select_users->execute();
-         $count_users = $select_users->rowCount();
+$select_buyers = $conn->prepare("SELECT * FROM `buyers`");
+$select_buyers->execute();
+$count_buyers = $select_buyers->rowCount();
+
+$select_sellers = $conn->prepare("SELECT * FROM `sellers`");
+$select_sellers->execute();
+$count_sellers = $select_sellers->rowCount();
+
+$count_users = $count_buyers + $count_sellers;
       ?>
       <h3><?= $count_users; ?></h3>
       <p>total users</p>
@@ -98,9 +104,14 @@ if(isset($_COOKIE['admin_id'])){
    
    <div class="box">
       <?php
-         $select_messages = $conn->prepare("SELECT * FROM `messages`");
-         $select_messages->execute();
-         $count_messages = $select_messages->rowCount();
+         $count_messages = 0;
+         try {
+            $select_messages = $conn->prepare("SELECT * FROM `messages`");
+            $select_messages->execute();
+            $count_messages = $select_messages->rowCount();
+         } catch (PDOException $e) {
+            $count_messages = 0;
+         }
          ?>
       <h3><?= $count_messages; ?></h3>
       <p>new messages</p>
