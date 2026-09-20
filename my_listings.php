@@ -88,6 +88,9 @@ if (isset($_POST['delete'])) {
     <div class="box-container">
 
     <?php
+        // Debug: Show user_id and count
+        echo "<!-- Debug: Your user_id = " . htmlspecialchars($user_id) . " -->";
+        
         $select_properties = $conn->prepare("SELECT * FROM `property` WHERE user_id = ? ORDER BY date DESC");
         $select_properties->execute([$user_id]);
 

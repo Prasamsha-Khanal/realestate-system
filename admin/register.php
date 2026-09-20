@@ -2,39 +2,12 @@
 
 include '../components/connect.php';
 
-if(isset($_COOKIE['admin_id'])){
-   $admin_id = $_COOKIE['admin_id'];
-}else{
-   $admin_id = '';
-   header('location:login.php');
-}
+// Admin registration is disabled
+// Only the default admin account can be used
+header('location:dashboard.php');
+exit;
 
-if(isset($_POST['submit'])){
-
-   $id = create_unique_id();
-   $name = $_POST['name'];
-   $name = filter_var($name, FILTER_SANITIZE_STRING); 
-   $pass = sha1($_POST['pass']);
-   $pass = filter_var($pass, FILTER_SANITIZE_STRING); 
-   $c_pass = sha1($_POST['c_pass']);
-   $c_pass = filter_var($c_pass, FILTER_SANITIZE_STRING);   
-
-   $select_admins = $conn->prepare("SELECT * FROM `admins` WHERE name = ?");
-   $select_admins->execute([$name]);
-
-   if($select_admins->rowCount() > 0){
-      $warning_msg[] = 'Username already taken!';
-   }else{
-      if($pass != $c_pass){
-         $warning_msg[] = 'Password not matched!';
-      }else{
-         $insert_admin = $conn->prepare("INSERT INTO `admins`(id, name, password) VALUES(?,?,?)");
-         $insert_admin->execute([$id, $name, $c_pass]);
-         $success_msg[] = 'Registered successfully!';
-      }
-   }
-
-}
+?>
 
 ?>
 

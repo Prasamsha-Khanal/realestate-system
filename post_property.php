@@ -31,6 +31,24 @@ if (isset($_POST['post'])) {
     if (empty(trim($_POST['description'] ?? '')))    $errors[] = 'Property description is required.';
     if (empty($_FILES['image_01']['name']))          $errors[] = 'Main image is required.';
 
+    // Validate property name - only letters and spaces
+    $property_name_temp = trim($_POST['property_name'] ?? '');
+    if (!preg_match('/^[a-zA-Z\s]+$/', $property_name_temp) && !empty($property_name_temp)) {
+        $errors[] = 'Property name should contain only letters.';
+    }
+
+    // Validate address - only letters, numbers, spaces, commas, and hyphens
+    $address_temp = trim($_POST['address'] ?? '');
+    if (!preg_match('/^[a-zA-Z0-9\s,\-]+$/', $address_temp) && !empty($address_temp)) {
+        $errors[] = 'Address should contain only letters, numbers, spaces, commas, and hyphens.';
+    }
+
+    // Validate price - must be selected (minimum 1 Crore)
+    $price_temp = isset($_POST['price']) ? (int)$_POST['price'] : 0;
+    if (!$price_temp) {
+        $errors[] = 'Please select a price.';
+    }
+
     if (!empty($errors)) {
         // Show all validation errors and stop
         foreach ($errors as $e) {
@@ -202,6 +220,22 @@ if (isset($_POST['post'])) {
             font-size: 15px;
             display: none;
         }
+
+        .field-error {
+            border: 2px solid #e74c3c !important;
+            background: #ffe0e0 !important;
+        }
+
+        .error-text {
+            color: #c0392b;
+            font-size: 13px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .error-text.show {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -221,15 +255,27 @@ if (isset($_POST['post'])) {
         <div class="flex">
             <div class="box">
                 <p>Property name <span>*</span></p>
-                <input type="text" inputmode="text" name="property_name" required maxlength="50"
+                <input type="text" inputmode="text" name="property_name" id="property_name" required maxlength="50"
                     placeholder="Enter property name" class="input">
+                <div class="error-text" id="property_name_error"></div>
             </div>
             <div class="box">
                 <p>Property price <span>*</span></p>
-           <input type="number" inputmode="numeric" name="price" required maxlength="12"
-               placeholder="Enter price" class="input">
-
-
+                <select name="price" id="price" required class="input">
+                    <option value="">-- Select Price --</option>
+                    <option value="10000000">Rs1 Crore (1,00,00,000)</option>
+                    <option value="15000000">Rs1.5 Crore (1,50,00,000)</option>
+                    <option value="20000000">Rs2 Crore (2,00,00,000)</option>
+                    <option value="25000000">Rs2.5 Crore (2,50,00,000)</option>
+                    <option value="30000000">Rs3 Crore (3,00,00,000)</option>
+                    <option value="35000000">Rs3.5 Crore (3,50,00,000)</option>
+                    <option value="40000000">Rs4 Crore (4,00,00,000)</option>
+                    <option value="45000000">Rs4.5 Crore (4,50,00,000)</option>
+                    <option value="50000000">Rs5 Crore (5,00,00,000)</option>
+                    
+                
+                </select>
+                <div class="error-text" id="price_error"></div>
             </div>
             <div class="box">
                 <p>Deposit amount</p>
@@ -238,8 +284,9 @@ if (isset($_POST['post'])) {
             </div>
             <div class="box">
                 <p>Property address <span>*</span></p>
-                <input type="text" name="address" required maxlength="100"
+                <input type="text" name="address" id="address" required maxlength="100"
                     placeholder="Full address" class="input">
+                <div class="error-text" id="address_error"></div>
             </div>
             <div class="box">
                 <p>Offer type <span>*</span></p>
@@ -410,7 +457,7 @@ if (isset($_POST['post'])) {
             <div class="box"><p>Image 05</p><input type="file" name="image_05" accept="image/*"></div>
         </div>
 
-        <input type="submit" value="Post Property" name="post" class="btn">
+        <input type="submit" value="Post Property" name="post" id="submit_btn" class="btn">
 
     </form>
 
@@ -431,6 +478,122 @@ function toggleFields() {
 
 propertyTypeSelect.addEventListener('change', toggleFields);
 window.addEventListener('load', toggleFields); // Run on page load too
+
+// ============================================================
+// LIVE VALIDATION FOR PROPERTY NAME AND PRICE
+// ============================================================
+
+const propertyNameInput = document.getElementById('property_name');
+const priceInput = document.getElementById('price');
+const addressInput = document.getElementById('address');
+const propertyNameError = document.getElementById('property_name_error');
+const priceError = document.getElementById('price_error');
+const addressError = document.getElementById('address_error');
+const submitBtn = document.getElementById('submit_btn');
+
+// Minimum price: 1 Crore (1,00,00,000)
+const MIN_PRICE = 10000000;
+
+// Validate property name - only letters and spaces allowed
+function validatePropertyName() {
+    const value = propertyNameInput.value.trim();
+    const letterOnly = /^[a-zA-Z\s]*$/;
+    
+    if (value === '') {
+        propertyNameError.style.display = 'none';
+        propertyNameError.classList.remove('show');
+        propertyNameInput.classList.remove('field-error');
+        return true;
+    }
+    
+    if (!letterOnly.test(value)) {
+        propertyNameError.textContent = '❌ Property name should contain only letters';
+        propertyNameError.classList.add('show');
+        propertyNameInput.classList.add('field-error');
+        return false;
+    } else {
+        propertyNameError.classList.remove('show');
+        propertyNameInput.classList.remove('field-error');
+        return true;
+    }
+}
+
+// Validate address - only letters, spaces, numbers, commas, and hyphens allowed
+function validateAddress() {
+    const value = addressInput.value.trim();
+    const addressPattern = /^[a-zA-Z0-9\s,\-]*$/;
+    
+    if (value === '') {
+        addressError.style.display = 'none';
+        addressError.classList.remove('show');
+        addressInput.classList.remove('field-error');
+        return true;
+    }
+    
+    if (!addressPattern.test(value)) {
+        addressError.textContent = '❌ Address should contain only letters, numbers, spaces, commas, and hyphens';
+        addressError.classList.add('show');
+        addressInput.classList.add('field-error');
+        return false;
+    } else {
+        addressError.classList.remove('show');
+        addressInput.classList.remove('field-error');
+        return true;
+    }
+}
+
+// Validate price - minimum 1 Crore
+function validatePrice() {
+    const value = priceInput.value.trim();
+    
+    if (value === '' || value === '0') {
+        priceError.style.display = 'none';
+        priceError.classList.remove('show');
+        priceInput.classList.remove('field-error');
+        return true;
+    }
+    
+    const priceNum = parseInt(value);
+    
+    if (isNaN(priceNum) || priceNum === 0) {
+        priceError.textContent = '❌ Please select a valid price';
+        priceError.classList.add('show');
+        priceInput.classList.add('field-error');
+        return false;
+    } else {
+        priceError.classList.remove('show');
+        priceInput.classList.remove('field-error');
+        return true;
+    }
+}
+
+// Check form validity
+function checkFormValidity() {
+    const isNameValid = validatePropertyName();
+    const isPriceValid = validatePrice();
+    const isAddressValid = validateAddress();
+    
+    if (!isNameValid || !isPriceValid || !isAddressValid) {
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.5';
+        submitBtn.style.cursor = 'not-allowed';
+    } else {
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
+        submitBtn.style.cursor = 'pointer';
+    }
+}
+
+// Add event listeners for real-time validation
+propertyNameInput.addEventListener('input', checkFormValidity);
+propertyNameInput.addEventListener('blur', validatePropertyName);
+priceInput.addEventListener('input', checkFormValidity);
+priceInput.addEventListener('blur', validatePrice);
+addressInput.addEventListener('input', checkFormValidity);
+addressInput.addEventListener('blur', validateAddress);
+
+// Check validity on page load
+window.addEventListener('load', checkFormValidity);
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>

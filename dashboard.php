@@ -65,13 +65,13 @@ if(!$user){
 
         <div class="box">
             <?php
-                $count_requests = $conn->prepare("SELECT * FROM `requests` WHERE receiver = ?");
-                $count_requests->execute([$user_id]);
-                $total_requests = $count_requests->rowCount();
+                $count_pending = $conn->prepare("SELECT * FROM `property` WHERE user_id = ? AND approved = 0");
+                $count_pending->execute([$user_id]);
+                $total_pending = $count_pending->rowCount();
             ?>
-            <h3><?= $total_requests; ?></h3>
-            <p>Requests Received</p>
-            <a href="requests.php" class="btn">View All Requests</a>
+            <h3><?= $total_pending; ?></h3>
+            <p>Pending Approval</p>
+            <a href="my_listings.php" class="btn">View Pending Properties</a>
         </div>
 
         <div class="box">

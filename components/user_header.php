@@ -61,6 +61,7 @@ if ($user_id != '') {
                         <li><a href="dashboard.php">Dashboard</a></li>
                         <li><a href="post_property.php">Post Property</a></li>
                         <li><a href="my_listings.php">My Listings</a></li>
+                        <li><a href="seller_inbox.php"><i class="fas fa-inbox"></i> Messages</a></li>
                         <!-- <li><a href="requests.php">View Requests</a></li> -->
 
                      <?php elseif ($user_type == 'buyer'): ?>

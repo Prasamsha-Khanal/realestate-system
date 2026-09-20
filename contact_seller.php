@@ -10,6 +10,9 @@ $buyer_id = $_COOKIE['user_id'];
 $seller_id = isset($_GET['seller_id']) ? $_GET['seller_id'] : '';
 $property_id = isset($_GET['property_id']) ? $_GET['property_id'] : '';
 
+$success = '';
+$warning = '';
+
 if($_SERVER['REQUEST_METHOD'] === 'POST'){
     $subject = isset($_POST['subject']) ? trim($_POST['subject']) : '';
     $message = isset($_POST['message']) ? trim($_POST['message']) : '';
@@ -18,18 +21,40 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     if($subject == '' || $message == ''){
         $warning = "Please fill all fields.";
     } else {
-        // optionally fetch buyer info to include name/email/number (if stored in users table)
-        $u = $conn->prepare("SELECT name,email,number FROM users WHERE id = ? LIMIT 1");
+        // Fetch buyer info
+        $u = $conn->prepare("SELECT name,email,number FROM buyers WHERE id = ? LIMIT 1");
         $u->execute([$buyer_id]);
         $buyer = $u->fetch(PDO::FETCH_ASSOC);
 
-        $insert = $conn->prepare("INSERT INTO messages (id, name, email, number, message) VALUES (?, ?, ?, ?, ?)");
-        $msg_id = uniqid('msg_');
+        // Store in session for seller to view
+        if(!isset($_SESSION)){
+            session_start();
+        }
+        
+        $message_data = [
+            'buyer_id' => $buyer_id,
+            'buyer_name' => $buyer['name'] ?? 'Buyer',
+            'buyer_email' => $buyer['email'] ?? '',
+            'buyer_number' => $buyer['number'] ?? '',
+            'seller_id' => $seller_id,
+            'property_id' => $property_id,
+            'subject' => $subject,
+            'message' => $message,
+            'timestamp' => date('Y-m-d H:i:s')
+        ];
 
-        $full_message = "Regarding property: $property_id\nFrom buyer id: $buyer_id\n\nSubject: $subject\n\n$message";
-
-        if($insert->execute([$msg_id, $buyer['name'] ?? 'Buyer', $buyer['email'] ?? '', $buyer['number'] ?? '', $full_message])){
-            $success = "Message sent to seller successfully.";
+        // Store message in file-based storage
+        $messages_file = 'seller_messages_' . $seller_id . '.json';
+        $all_messages = [];
+        
+        if(file_exists($messages_file)){
+            $all_messages = json_decode(file_get_contents($messages_file), true) ?? [];
+        }
+        
+        $all_messages[] = $message_data;
+        
+        if(file_put_contents($messages_file, json_encode($all_messages, JSON_PRETTY_PRINT))){
+            $success = "Message sent to seller successfully!";
         } else {
             $warning = "Failed to send message. Try later.";
         }

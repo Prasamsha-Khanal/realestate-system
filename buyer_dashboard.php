@@ -119,12 +119,6 @@ try {
             <a href="search.php" class="btn">Search Now</a>
         </div>
 
-        <div class="box">
-            <h3>Browse Listings</h3>
-            <p>Explore all available properties</p>
-            <a href="listings.php" class="btn">Browse All</a>
-        </div>
-
     </div>
 </section>
 

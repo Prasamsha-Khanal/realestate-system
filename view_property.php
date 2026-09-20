@@ -14,6 +14,20 @@ if(isset($_GET['get_id'])){
    header('location:home.php');
 }
 
+// Get current user's type (buyer or seller)
+$user_type = '';
+if($user_id != ''){
+   // Check if user exists in sellers table (means they're a seller)
+   $select_seller = $conn->prepare("SELECT id FROM `sellers` WHERE id = ?");
+   $select_seller->execute([$user_id]);
+   
+   if($select_seller->rowCount() > 0){
+      $user_type = 'seller';
+   } else {
+      $user_type = 'buyer';
+   }
+}
+
 include 'components/save_send.php';
 include 'components/buy_send.php';
 include 'components/inquiry_send.php';
@@ -204,13 +218,18 @@ include 'components/inquiry_send.php';
       <h3 class="title">Description</h3>
       <p class="description"><?= nl2br($fetch_property['description']); ?></p>
 
+      <?php if($user_type == 'buyer' && $user_id != ''){ ?>
       <form action="" method="post" class="flex-btn">
          <input type="hidden" name="property_id" value="<?= $property_id; ?>">
          <button type="submit" name="buy_property" class="btn">
             <i class="fa-solid fa-landmark"></i> Buy Now
          </button>
-         <!-- <input type="submit" value="Send Enquiry" name="send" class="btn"> -->
       </form>
+      <?php } elseif($user_type != 'seller' && $user_id == ''){ ?>
+      <div style="background: #d1ecf1; border: 1px solid #bee5eb; padding: 15px; border-radius: 5px; margin-top: 20px;">
+         <p style="color: #0c5460; margin: 0;"><i class="fas fa-info-circle"></i> <a href="login.php">Login as a buyer</a> to purchase this property.</p>
+      </div>
+      <?php } ?>
    </div>
    <?php
          }

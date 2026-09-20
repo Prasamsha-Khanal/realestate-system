@@ -80,7 +80,6 @@ if(isset($_POST['delete'])){
    <div class="box" style="order: -1;">
       <p>name : <span><?= $fetch_admins['name']; ?></p>
       <a href="update.php" class="option-btn">update account</a>
-      <a href="register.php" class="btn">register new</a>
    </div>
    <?php }else{?>
    <div class="box">

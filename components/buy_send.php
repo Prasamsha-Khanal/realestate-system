@@ -8,6 +8,16 @@ if(isset($_POST['buy_property'])){
    }
 
    $buyer_id = $_COOKIE['user_id'];
+   
+   // Check if user is a seller (cannot buy if in sellers table)
+   $check_seller = $conn->prepare("SELECT id FROM `sellers` WHERE id = ?");
+   $check_seller->execute([$buyer_id]);
+   
+   if($check_seller->rowCount() > 0){
+      $warning_msg[] = 'Only buyers can purchase properties! Sellers cannot buy properties.';
+      return;
+   }
+   
    $property_id = $_POST['property_id'];
 
    // Check if property exists

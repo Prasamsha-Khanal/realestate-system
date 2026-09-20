@@ -128,16 +128,20 @@ include 'components/save_send.php';
 
 if(isset($_POST['h_search'])){
 
-   $h_location = $_POST['h_location'];
-   $h_location = filter_var($h_location, FILTER_SANITIZE_STRING);
-   $h_type = $_POST['h_type'];
-   $h_type = filter_var($h_type, FILTER_SANITIZE_STRING);
-   $h_offer = $_POST['h_offer'];
-   $h_offer = filter_var($h_offer, FILTER_SANITIZE_STRING);
-   $h_min = $_POST['h_min'];
-   $h_min = filter_var($h_min, FILTER_SANITIZE_STRING);
-   $h_max = $_POST['h_max'];
-   $h_max = filter_var($h_max, FILTER_SANITIZE_STRING);
+   $h_location = $_POST['h_location'] ?? '';
+$h_location = filter_var($h_location, FILTER_SANITIZE_STRING);
+
+$h_type = $_POST['h_type'] ?? '';
+$h_type = filter_var($h_type, FILTER_SANITIZE_STRING);
+
+$h_offer = $_POST['h_offer'] ?? '';
+$h_offer = filter_var($h_offer, FILTER_SANITIZE_STRING);
+
+$h_min = $_POST['h_min'] ?? 0;
+$h_min = filter_var($h_min, FILTER_SANITIZE_STRING);
+
+$h_max = $_POST['h_max'] ?? 999999999;
+$h_max = filter_var($h_max, FILTER_SANITIZE_STRING);;
 
    $select_properties = $conn->prepare("SELECT * FROM `property` WHERE address LIKE '%{$h_location}%' AND type LIKE '%{$h_type}%' AND offer LIKE '%{$h_offer}%' AND price BETWEEN $h_min AND $h_max ORDER BY date DESC");
    $select_properties->execute();
